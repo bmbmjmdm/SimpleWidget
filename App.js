@@ -10,12 +10,9 @@ const SharedStorage = NativeModules.SharedStorage;
 
 const App = () => {
   useEffect(() => {
+    NativeModules.BackgroundWorkManager.stopBackgroundWork();
     console.log("STARTING")
-    NativeModules.BackgroundWorkManager.startBackgroundWork();/*
-    return () => {
-      console.log("STOPPING")
-      NativeModules.BackgroundWorkManager.stopBackgroundWork();
-    };*/
+    setTimeout(NativeModules.BackgroundWorkManager.startBackgroundWork, 1000);
   }, []);
 
   const [text, setText] = useState('');

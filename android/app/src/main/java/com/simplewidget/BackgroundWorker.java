@@ -27,12 +27,12 @@ public class BackgroundWorker extends Worker {
         Intent service = new Intent(this.context, BackgroundHeadlessTaskService.class);
         //service.putExtras(extras);
 
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createChannel();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //BackgroundHeadlessTaskService.createChannel();
             this.context.startForegroundService(service);
-        } else {*/
+        } else {
             this.context.startService(service);
-        //}
+        }
         return ListenableWorker.Result.success();
     }
 }

@@ -1,13 +1,6 @@
 import {NativeModules} from 'react-native';
 
-const SharedStorage = NativeModules.SharedStorage;
-
-module.exports = async (taskData) => {
+module.exports = async () => {
   console.log("Hey this is a headless JS task==========================");
-  SharedStorage.get().then((value) => {
-    let newVal = value
-    if (!newVal) newVal = "";
-    SharedStorage.set(JSON.stringify("1" + newVal));
-  });
-  return;
+  NativeModules.SharedStorage.set(JSON.stringify({text:Math.random().toString()}));
 };
