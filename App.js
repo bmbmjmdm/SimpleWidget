@@ -1,13 +1,23 @@
-
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, TextInput, StyleSheet, NativeModules} from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
+import {AppRegistry} from 'react-native';
 
-const group = 'group.asap';
-
+AppRegistry.registerHeadlessTask('backgroundTask', () =>
+  require('./backgroundTask.js'),
+);
 const SharedStorage = NativeModules.SharedStorage;
 
 const App = () => {
+  useEffect(() => {
+    console.log("STARTING")
+    NativeModules.BackgroundWorkManager.startBackgroundWork();/*
+    return () => {
+      console.log("STOPPING")
+      NativeModules.BackgroundWorkManager.stopBackgroundWork();
+    };*/
+  }, []);
+
   const [text, setText] = useState('');
   const widgetData = {
     text,
@@ -16,7 +26,7 @@ const App = () => {
   const handleSubmit = async () => {
     try {
       // iOS
-      await SharedGroupPreferences.setItem('widgetKey', widgetData, group);
+      // await SharedGroupPreferences.setItem('widgetKey', widgetData, 'group.asap');
     } catch (error) {
       console.log({error});
     }
