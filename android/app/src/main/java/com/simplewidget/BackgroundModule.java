@@ -20,12 +20,12 @@ public class BackgroundModule extends ReactContextBaseJavaModule {
     BackgroundModule(@Nonnull ReactApplicationContext reactContext) {
         super(reactContext);
         mContext = reactContext;
-        workRequest = new PeriodicWorkRequest.Builder(BackgroundWorker.class, 1, TimeUnit.MINUTES).build();
+        workRequest = new PeriodicWorkRequest.Builder(BackgroundWorker.class, 16, TimeUnit.MINUTES).build();
     }
 
     @ReactMethod
     public void startBackgroundWork() {
-        WorkManager.getInstance(mContext).enqueueUniquePeriodicWork("testWork", ExistingPeriodicWorkPolicy.KEEP,workRequest);
+        WorkManager.getInstance(mContext).enqueue(workRequest);
     }
 
     @ReactMethod

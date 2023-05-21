@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import com.facebook.react.bridge.WritableMap;
+import android.content.Context;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -25,7 +26,7 @@ public class BackgroundHeadlessTaskService extends HeadlessJsTaskService {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Log.w("bg", "1====================");
-            createChannel();
+            createChannel(getApplicationContext());
             Notification notification = new NotificationCompat.Builder(getApplicationContext(), "demo")
                     .setContentTitle("Headless Work")
                     .setTicker("runn")
@@ -52,13 +53,13 @@ public class BackgroundHeadlessTaskService extends HeadlessJsTaskService {
         );
     }
     @RequiresApi(Build.VERSION_CODES.O)
-    private void createChannel() {
+    public static void createChannel(Context applicationContext) {
         String description = "test channel";
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
         NotificationChannel channel = new NotificationChannel("demo", "test", importance);
         channel.setDescription(description);
         NotificationManager notificationManager =
-                (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
+                (NotificationManager) applicationContext.getSystemService(NOTIFICATION_SERVICE);
 
         notificationManager.createNotificationChannel(channel);
 

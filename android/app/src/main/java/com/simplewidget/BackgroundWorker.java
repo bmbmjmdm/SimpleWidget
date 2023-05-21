@@ -28,7 +28,7 @@ public class BackgroundWorker extends Worker {
         //service.putExtras(extras);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            //BackgroundHeadlessTaskService.createChannel();
+            BackgroundHeadlessTaskService.createChannel(getApplicationContext());
             this.context.startForegroundService(service);
         } else {
             this.context.startService(service);
