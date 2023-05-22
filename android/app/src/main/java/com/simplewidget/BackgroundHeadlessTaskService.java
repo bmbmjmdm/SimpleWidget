@@ -128,7 +128,7 @@ public class BackgroundHeadlessTaskService extends Service {
       // the equation below causes the index to change every 15 minutes
       int length = MainActivity.allNotes.size();
       Long index = System.currentTimeMillis() / (15 * 60 * 1000);
-      index = index + timesButtonPressed;
+      index = index + MainActivity.timesPressed;
       index = index % length;
       return MainActivity.allNotes.get(index.intValue());
   }

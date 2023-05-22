@@ -45,6 +45,7 @@ public class MainActivity extends ReactActivity {
   private PeriodicWorkRequest workRequest;
   public static ArrayList<String> allNotes = new ArrayList<String>();
   public static String fileError;
+  public static int timesPressed = 0;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
