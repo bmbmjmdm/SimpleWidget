@@ -4,12 +4,32 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import androidx.work.ExistingPeriodicWorkPolicy;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static androidx.core.app.ActivityCompat.startActivityForResult;
 
 public class MainActivity extends ReactActivity {
 
@@ -23,15 +43,79 @@ public class MainActivity extends ReactActivity {
   }
 
   private PeriodicWorkRequest workRequest;
+  public static ArrayList<String> allNotes = new ArrayList<String>();
+  public static String fileError;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+      Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+      intent.addCategory(Intent.CATEGORY_OPENABLE);
+      intent.setType("application/json");
+
+      // Optionally, specify a URI for the file that should appear in the
+      // system file picker when it loads.
+      Uri pickerInitialUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/simplenote.json");
+      intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
+
+      startActivityForResult(intent, 999);
+  }
+
+  @Override
+  public void onActivityResult(int requestCode, int resultCode,
+                               Intent resultData) {
+    super.onActivityResult(requestCode, resultCode, resultData);
+    if (requestCode == 999 && resultCode == Activity.RESULT_OK) {
+      // The result data contains a URI for the document or directory that
+      // the user selected.
+      if (resultData != null) {
+        Uri uri = resultData.getData();
+        String mimeType = this.getContentResolver().getType(uri);
+
+        if (mimeType != null && mimeType.equals("application/json")) {
+            try {
+              StringBuilder jsonContent = new StringBuilder();
+              InputStream inputStream = this.getContentResolver().openInputStream(uri);
+              byte[] buffer = new byte[1024];
+              int read;
+              while ((read = inputStream.read(buffer)) != -1) {
+                jsonContent.append(new String(buffer, 0, read));
+              }
+              inputStream.close();
+              JSONArray allNotesJSON = new JSONObject(jsonContent.toString()).getJSONArray("activeNotes");
+              JSONObject[] allNotesRandomized = new JSONObject[allNotesJSON.length()];
+              for (int i = 0; i < allNotesJSON.length(); i++) {
+                allNotesRandomized[i] = allNotesJSON.getJSONObject(i);
+              }
+              Collections.shuffle(Arrays.asList(allNotesRandomized));
+              for (int i = 0; i < allNotesRandomized.length; i++) {
+                JSONObject selectedNote = allNotesRandomized[i];
+                String content = selectedNote.getString("content");
+                content = content.replaceAll("\n+", "\n");
+                String[] contentSplit = content.split("\n");
+                for (int j = 0; j < contentSplit.length; j++) {
+                  if (contentSplit[j].length() > 0) {
+                    this.allNotes.add(contentSplit[j]);
+                  }
+                }
+              }
+            }
+            catch (JSONException e) {
+              this.fileError = "ERR:" + e.toString();
+            }
+            catch (IOException e) {
+              this.fileError = "ERR:" + e.toString();
+            }
+        }
+      }
+    }
     //create the work request
     workRequest = new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES).build();
     //enqueue the work request
-    WorkManager.getInstance(this).enqueueUniquePeriodicWork("simplewidget", ExistingPeriodicWorkPolicy.KEEP, workRequest);
+    WorkManager.getInstance(this).enqueueUniquePeriodicWork("simplewidget", ExistingPeriodicWorkPolicy.REPLACE, workRequest);
   }
+
 
   /**
    * Returns the instance of the {@link ReactActivityDelegate}. Here we use a util class {@link

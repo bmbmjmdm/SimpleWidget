@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import com.facebook.react.bridge.WritableMap;
@@ -14,6 +15,9 @@ import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.util.Log;
 
 import com.facebook.react.HeadlessJsTaskService;
@@ -29,7 +33,18 @@ import android.os.Process;
 import android.os.IBinder;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.Math;
+import java.util.List;
+
+import static androidx.core.app.ActivityCompat.startActivityForResult;
 
 public class BackgroundHeadlessTaskService extends Service {
   private Looper serviceLooper;
@@ -59,8 +74,6 @@ public class BackgroundHeadlessTaskService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    Log.w("bg", "Headless doing something====================");
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         String description = "test channel";
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
@@ -71,16 +84,22 @@ public class BackgroundHeadlessTaskService extends Service {
         notificationManager.createNotificationChannel(channel);
 
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), "demo")
-                .setContentTitle("Headless Work")
+                .setContentTitle("SimpleWidget - Notes")
                 .setTicker("runn")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(true)
+                .setOnlyAlertOnce(true)
                 .build();
                 
         startForeground(1, notification);
         
         SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences("DATA", Context.MODE_PRIVATE).edit();
-        editor.putString("appData", "{\"text\":\"" + Math.random() + "\"}");
+        editor.putString("appData", "{\"text\":\"" +
+
+          // Whatever you put here will appear in the widget
+          getNote()
+
+        + "\"}");
         editor.commit();
         Intent widgetIntent = new Intent(getApplicationContext(), MyWidget.class);
         widgetIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
@@ -101,4 +120,16 @@ public class BackgroundHeadlessTaskService extends Service {
       return null;
   }
 
+  public static String getNote() {
+      if (MainActivity.fileError != null) {
+          return MainActivity.fileError;
+      }
+      // pick a random note based on the current time so we can remain stateless
+      // the equation below causes the index to change every 15 minutes
+      int length = MainActivity.allNotes.size();
+      Long index = System.currentTimeMillis() / (15 * 60 * 1000);
+      index = index + timesButtonPressed;
+      index = index % length;
+      return MainActivity.allNotes.get(index.intValue());
+  }
 }
