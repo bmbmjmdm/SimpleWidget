@@ -6,6 +6,10 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import android.os.Bundle;
 import android.util.Log;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import java.util.concurrent.TimeUnit;
+import androidx.work.ExistingPeriodicWorkPolicy;
 
 public class MainActivity extends ReactActivity {
 
@@ -16,6 +20,17 @@ public class MainActivity extends ReactActivity {
   @Override
   protected String getMainComponentName() {
     return "SimpleWidget";
+  }
+
+  private PeriodicWorkRequest workRequest;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    //create the work request
+    workRequest = new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES).build();
+    //enqueue the work request
+    WorkManager.getInstance(this).enqueueUniquePeriodicWork("simplewidget", ExistingPeriodicWorkPolicy.KEEP, workRequest);
   }
 
   /**

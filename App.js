@@ -3,18 +3,22 @@ import {View, TextInput, StyleSheet, NativeModules} from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
 import {AppRegistry} from 'react-native';
 
+/*
 AppRegistry.registerHeadlessTask('backgroundTask', () =>
   require('./backgroundTask.js'),
 );
+*/
+
 const SharedStorage = NativeModules.SharedStorage;
 
 const App = () => {
+  /*
   useEffect(() => {
     NativeModules.BackgroundWorkManager.stopBackgroundWork();
     console.log("STARTING")
     setTimeout(NativeModules.BackgroundWorkManager.startBackgroundWork, 1000);
   }, []);
-
+*/
   const [text, setText] = useState('');
   const widgetData = {
     text,
