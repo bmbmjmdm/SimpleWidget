@@ -76,6 +76,7 @@ public class MainActivity extends ReactActivity {
 
         if (mimeType != null && mimeType.equals("application/json")) {
             try {
+              // read the json file into a json object
               StringBuilder jsonContent = new StringBuilder();
               InputStream inputStream = this.getContentResolver().openInputStream(uri);
               byte[] buffer = new byte[1024];
@@ -84,20 +85,38 @@ public class MainActivity extends ReactActivity {
                 jsonContent.append(new String(buffer, 0, read));
               }
               inputStream.close();
+              // extract all notes as an array of json objects
               JSONArray allNotesJSON = new JSONObject(jsonContent.toString()).getJSONArray("activeNotes");
               JSONObject[] allNotesRandomized = new JSONObject[allNotesJSON.length()];
               for (int i = 0; i < allNotesJSON.length(); i++) {
                 allNotesRandomized[i] = allNotesJSON.getJSONObject(i);
               }
+              // randomize the order of all notes
               Collections.shuffle(Arrays.asList(allNotesRandomized));
+              // go through each note and
               for (int i = 0; i < allNotesRandomized.length; i++) {
                 JSONObject selectedNote = allNotesRandomized[i];
+                // if this note is marked private, skip it
+                JSONArray tags = selectedNote.getJSONArray("tags");
+                boolean cont = false;
+                for (int ii = 0; ii < tags.length(); ii++) {
+                  if ("private".equals(tags.getString(ii))) {
+                    cont = true;
+                  }
+                }
+                if (cont) {
+                  continue;
+                }
+                // otherwise, break up its content by lines
                 String content = selectedNote.getString("content");
-                content = content.replaceAll("\n+", "\n");
                 String[] contentSplit = content.split("\n");
                 for (int j = 0; j < contentSplit.length; j++) {
                   if (contentSplit[j].length() > 0) {
-                    this.allNotes.add(contentSplit[j]);
+                    // add each line (ignoring blank lines) to our total notes array
+                    // (here the meaning of "note" changes from a text file to a single line of the text file)
+                    if (contentSplit[j] != "") {
+                      this.allNotes.add(contentSplit[j]);
+                    }
                   }
                 }
               }

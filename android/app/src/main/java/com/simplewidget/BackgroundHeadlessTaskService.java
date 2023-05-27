@@ -11,6 +11,7 @@ import com.facebook.react.bridge.WritableMap;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.app.Notification;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -84,29 +85,34 @@ public class BackgroundHeadlessTaskService extends Service {
         notificationManager.createNotificationChannel(channel);
 
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), "demo")
-                .setContentTitle("SimpleWidget - Notes")
-                .setTicker("runn")
+                .setContentTitle("Cycling Notes")
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setOngoing(true)
                 .setOnlyAlertOnce(true)
+                .setSilent(true)
+                .setVisibility(Notification.VISIBILITY_SECRET)
+                /* these dont seem to do anything...
+                .setOngoing(false)
+                .setAutoCancel(true)
+                .setTimeoutAfter(1000)
+                */
                 .build();
                 
         startForeground(1, notification);
-        
-        SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences("DATA", Context.MODE_PRIVATE).edit();
-        editor.putString("appData", "{\"text\":\"" +
-
-          // Whatever you put here will appear in the widget
-          getNote()
-
-        + "\"}");
-        editor.commit();
-        Intent widgetIntent = new Intent(getApplicationContext(), MyWidget.class);
-        widgetIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplicationContext(), MyWidget.class));
-        widgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-        getApplicationContext().sendBroadcast(widgetIntent);
     }
+
+    SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences("DATA", Context.MODE_PRIVATE).edit();
+    editor.putString("appData", "{\"text\":\"" +
+
+      // Whatever you put here will appear in the widget
+      getNote()
+
+    + "\"}");
+    editor.commit();
+    Intent widgetIntent = new Intent(getApplicationContext(), MyWidget.class);
+    widgetIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+    int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplicationContext(), MyWidget.class));
+    widgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+    getApplicationContext().sendBroadcast(widgetIntent);
 
     
     
