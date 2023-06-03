@@ -96,27 +96,32 @@ public class MainActivity extends ReactActivity {
               // go through each note and
               for (int i = 0; i < allNotesRandomized.length; i++) {
                 JSONObject selectedNote = allNotesRandomized[i];
-                // if this note is marked private, skip it
-                JSONArray tags = selectedNote.getJSONArray("tags");
-                boolean cont = false;
-                for (int ii = 0; ii < tags.length(); ii++) {
-                  if ("private".equals(tags.getString(ii))) {
-                    cont = true;
+                try {
+                  // if this note is marked private, skip it
+                  JSONArray tags = selectedNote.getJSONArray("tags");
+                  boolean cont = false;
+                  for (int ii = 0; ii < tags.length(); ii++) {
+                    if ("private".equals(tags.getString(ii))) {
+                      cont = true;
+                    }
+                  }
+                  if (cont) {
+                    continue;
                   }
                 }
-                if (cont) {
-                  continue;
+                catch (JSONException e) {
+                  // it's ok to fail here, that just means the note doesnt have tags
                 }
                 // otherwise, break up its content by lines
                 String content = selectedNote.getString("content");
                 String[] contentSplit = content.split("\n");
                 for (int j = 0; j < contentSplit.length; j++) {
-                  if (contentSplit[j].length() > 0) {
-                    // add each line (ignoring blank lines) to our total notes array
+                  String curLine = contentSplit[j];
+                  // skip lines that are 0-2 characters long or are links
+                  if (curLine.length() > 2 && !curLine.startsWith("http")) {
+                    // add each line to our total notes array
                     // (here the meaning of "note" changes from a text file to a single line of the text file)
-                    if (contentSplit[j] != "") {
-                      this.allNotes.add(contentSplit[j]);
-                    }
+                    this.allNotes.add(curLine);
                   }
                 }
               }
