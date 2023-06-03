@@ -112,26 +112,34 @@ public class MainActivity extends ReactActivity {
                 catch (JSONException e) {
                   // it's ok to fail here, that just means the note doesnt have tags
                 }
+
                 // otherwise, break up its content by lines
                 String content = selectedNote.getString("content");
-                String[] contentSplit = content.split("\n");
+                // filter out multiple new lines
+                String contentLessLines = content.replace("\n\n", "\n");
+                String[] contentSplit = contentLessLines.split("\n");
+                // skip lines that are 0-2 characters long or are links
+                contentSplit = (String[]) Arrays.stream(contentSplit).filter(x -> {
+                  boolean isLineLink = x.startsWith("http");
+                  boolean isLineBigEnough = x.length() > 3;
+                  return isLineBigEnough && !isLineLink;
+                }).toArray(String[]::new);
+                
+                // now go through the note's lines one by one
                 for (int j = 0; j < contentSplit.length; j++) {
                   String curLine = contentSplit[j];
-                  boolean isLineLink = curLine.startsWith("http");
-                  boolean isLineTooSmall = curLine.length() < 3;
-                  // skip lines that are 0-2 characters long or are links
-                  if (!isLineTooSmall && !isLineLink) {
-                    // if the current and next line are small, concat them into 1
-                    boolean isLineKindaSmall = curLine.length() < 50;
-                    boolean canNextLineBeAppended = j + 1 < contentSplit.length && contentSplit[j + 1].length() < 50;
-                    if (isLineKindaSmall && canNextLineBeAppended) {
-                      j++;
-                      curLine = curLine + "\n" + contentSplit[j];
-                    }
-                    // add each line to our total notes array
-                    // (here the meaning of "note" changes from a text file to a single line of the text file)
-                    this.allNotes.add(curLine);
+                  // if the current and next line are small, concat them into 1
+                  boolean isLineKindaSmall = curLine.length() < 50;
+                  int nextLineLength = j + 1 < contentSplit.length ? contentSplit[j + 1].length(): -1;
+                  boolean canNextLineBeAppended = nextLineLength < 50 && nextLineLength > 2;
+                  if (isLineKindaSmall && canNextLineBeAppended) {
+                    j++;
+                    curLine = curLine + "\n" + contentSplit[j];
                   }
+
+                  // add each line to our total notes array
+                  // (here the meaning of "note" changes from a text file to a single line of the text file)
+                  this.allNotes.add(curLine);
                 }
               }
             }
