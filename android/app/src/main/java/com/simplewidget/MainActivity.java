@@ -117,8 +117,17 @@ public class MainActivity extends ReactActivity {
                 String[] contentSplit = content.split("\n");
                 for (int j = 0; j < contentSplit.length; j++) {
                   String curLine = contentSplit[j];
+                  boolean isLineLink = curLine.startsWith("http");
+                  boolean isLineTooSmall = curLine.length() < 3;
                   // skip lines that are 0-2 characters long or are links
-                  if (curLine.length() > 2 && !curLine.startsWith("http")) {
+                  if (!isLineTooSmall && !isLineLink) {
+                    // if the current and next line are small, concat them into 1
+                    boolean isLineKindaSmall = curLine.length() < 50;
+                    boolean canNextLineBeAppended = j + 1 < contentSplit.length && contentSplit[j + 1].length() < 50;
+                    if (isLineKindaSmall && canNextLineBeAppended) {
+                      j++;
+                      curLine = curLine + "\n" + contentSplit[j];
+                    }
                     // add each line to our total notes array
                     // (here the meaning of "note" changes from a text file to a single line of the text file)
                     this.allNotes.add(curLine);
